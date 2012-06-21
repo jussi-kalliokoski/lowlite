@@ -1,0 +1,95 @@
+#!/usr/bin/env node
+
+function processInput (data) {
+	var output = args.output || '-'
+	var outdata = lowlite.highlight(data, options)
+
+	if (output === '-') {
+		process.stdout.write(outdata)
+	} else {
+		fs.writeFileSync(output, outdata, 'utf8')
+	}
+
+	process.exit(0)
+}
+
+process.on('uncaughtxException', function (e) {
+	console.error(e)
+	process.exit(1)
+})
+
+var lowlite = require('../lib')
+var paramon = require('paramon')
+var path = require('path')
+var fs = require('fs')
+
+var options = {}
+
+var args = paramon.readFormat(process.argv, {
+	name: 'lowlite',
+	usage: '[flags] inputfile',
+	params: [
+		{
+			name: 'lexer',
+			args: ['--lexer', '-l'],
+			desc: 'The name of the lexer, i.e. the format of the input.',
+			minParams: 1,
+			maxParams: 1
+		},
+
+		{
+			name: 'format',
+			args: ['--format', '-f'],
+			desc: 'The format of the output.',
+			minParams: 1,
+			maxParams: 1
+		},
+
+		{
+			name: 'output',
+			args: ['--output-file', '-o'],
+			desc: 'File to write to.',
+			minParams: 1,
+			maxParams: 1
+		},
+
+		{
+			name: 'shorthand',
+			args: ['--shorthand'],
+			desc: 'Use shorthand classnames.',
+			maxParams: 0
+		}
+	]
+})
+
+var input = args['$!stray']
+
+if (input.length > 1) throw Error("Too many arguments!")
+
+input = input[0] || '-'
+
+if (args.lexer) options.lexer = args.lexer
+if (args.format) options.format = args.format
+if (args.shorthand) options.aliases = lowlite.shorthands
+
+if (input !== '-') {
+	if (!options.lexer) {
+		var ext = path.extname(input).split('.')
+		ext = ext[ext.length - 1]
+
+		if (lowlite.lexers[ext]) {
+			options.lexer = ext
+		}
+	}
+
+	processInput(fs.readFileSync(input, 'utf8'))
+} else {
+	var data = ''
+	process.stdin.resume()
+	process.stdin.on('data', function (d) {
+		data += String(d)
+	})
+	process.stdin.on('end', function () {
+		processInput(data)
+	})
+}
