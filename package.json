@@ -2,7 +2,7 @@
   "author": "Jussi Kalliokoski <jussi.kalliokoski@gmail.com> (http://avd.io)",
   "name": "lowlite",
   "description": "A syntax highlighting tool written for node.js",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "homepage": "https://github.com/jussi-kalliokoski/lowlite",
   "repository": {
     "url": "https://github.com/jussi-kalliokoski/lowlite.git"
